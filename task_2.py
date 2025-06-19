@@ -1,40 +1,73 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# Створення графа G
+# Побудова графа
 G = nx.Graph()
-
-# Додаємо вершини (наприклад, зупинки транспорту)
-nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-G.add_nodes_from(nodes)
-
-# Додаємо ребра (наприклад, дороги або маршрути)
-edges = [
-    ('A', 'B'), ('A', 'C'),
-    ('B', 'D'),
-    ('C', 'E'),
-    ('D', 'E'),
-    ('E', 'F'),
-    ('F', 'G'), ('F', 'H')
+stations = [
+    "Central", "North", "South", "East", "West",
+    "Park", "Museum", "Library", "Stadium", "Airport"
 ]
-G.add_edges_from(edges)
+G.add_nodes_from(stations)
+connections = [
+    ("Central", "North"), ("Central", "South"), ("Central", "East"),
+    ("Central", "West"), ("Central", "Museum"), ("Museum", "Park"),
+    ("North", "Library"), ("South", "Stadium"),
+    ("East", "Airport"), ("Library", "Airport")
+]
+G.add_edges_from(connections)
 
-# Візуалізація графа
-plt.figure(figsize=(8, 6))
-pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=14)
-plt.title("Модель транспортної мережі")
-plt.show()
+# DFS: глибина
+def dfs_path(graph, start, goal, path=None, visited=None):
+    if path is None:
+        path = []
+    if visited is None:
+        visited = set()
+    path = path + [start]
+    visited.add(start)
+    if start == goal:
+        return path
+    for neighbor in graph.neighbors(start):
+        if neighbor not in visited:
+            new_path = dfs_path(graph, neighbor, goal, path, visited)
+            if new_path:
+                return new_path
+    return None
 
-# DFS (пошук в глибину)
-dfs_path = list(nx.dfs_preorder_nodes(G, source='A'))
-print("DFS path:", dfs_path)
+# BFS: ширина
+def bfs_path(graph, start, goal):
+    queue = [(start, [start])]
+    visited = set([start])
+    while queue:
+        current, path = queue.pop(0)
+        for neighbor in graph.neighbors(current):
+            if neighbor == goal:
+                return path + [goal]
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, path + [neighbor]))
+    return None
 
-# BFS (пошук в ширину)
-bfs_path = list(nx.bfs_tree(G, source='A').nodes())
-print("BFS path:", bfs_path)
+# Шлях від 'Park' до 'Airport'
+dfs_result = dfs_path(G, 'Park', 'Airport')
+bfs_result = bfs_path(G, 'Park', 'Airport')
 
-# Пояснення
-print("\nПояснення:")
-print("DFS йде якнайглибше по одному напрямку, перш ніж повернутись і піти іншим шляхом.")
-print("BFS досліджує всі сусідні вершини перед тим, як перейти на наступний рівень глибини.")
+# Вивід результатів
+print("🔍 DFS path from Park to Airport:", dfs_result)
+print("🔍 BFS path from Park to Airport:", bfs_result)
+
+# Візуалізація обох шляхів
+def draw_path(path, title):
+    plt.figure(figsize=(8, 6))
+    pos = nx.spring_layout(G, seed=42)
+    nx.draw(G, pos, with_labels=True, node_color='lightgray', edge_color='lightgray')
+    if path:
+        path_edges = list(zip(path, path[1:]))
+        nx.draw_networkx_nodes(G, pos, nodelist=path, node_color='skyblue')
+        nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='blue', width=2)
+    plt.title(title)
+    plt.axis('off')
+    plt.show()
+
+draw_path(dfs_result, "DFS Path from Park to Airport")
+draw_path(bfs_result, "BFS Path from Park to Airport")
+
