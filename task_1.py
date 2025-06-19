@@ -1,39 +1,45 @@
-class HashTable:
-    def __init__(self, size):
-        self.size = size
-        self.table = [[] for _ in range(self.size)]
+import networkx as nx
+import matplotlib.pyplot as plt
 
-    def hash_function(self, key):
-        return hash(key) % self.size
+# Створюємо граф (як приклад, я взяла транспортну мережу метро)
+G = nx.Graph()
 
-    def insert(self, key, value):
-        key_hash = self.hash_function(key)
-        key_value = [key, value]
+# Додаємо вузли (станції метро)
+stations = [
+    "Central", "North", "South", "East", "West",
+    "Park", "Museum", "Library", "Stadium", "Airport"
+]
+G.add_nodes_from(stations)
 
-        if not self.table[key_hash]:
-            self.table[key_hash].append(key_value)
-            return True
-        else:
-            for pair in self.table[key_hash]:
-                if pair[0] == key:
-                    pair[1] = value
-                    return True
-            self.table[key_hash].append(key_value)
-            return True
+# Додаємо ребра (лінії метро між станціями)
+connections = [
+    ("Central", "North"),
+    ("Central", "South"),
+    ("Central", "East"),
+    ("Central", "West"),
+    ("Central", "Museum"),
+    ("Museum", "Park"),
+    ("North", "Library"),
+    ("South", "Stadium"),
+    ("East", "Airport"),
+    ("Library", "Airport")
+]
+G.add_edges_from(connections)
 
-    def get(self, key):
-        key_hash = self.hash_function(key)
-        if self.table[key_hash]:
-            for pair in self.table[key_hash]:
-                if pair[0] == key:
-                    return pair[1]
-        return None
+# Візуалізуємо граф
+plt.figure(figsize=(10, 7))
+pos = nx.spring_layout(G, seed=42)
+nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=900)
+nx.draw_networkx_edges(G, pos, width=2)
+nx.draw_networkx_labels(G, pos, font_size=11, font_weight='bold')
+plt.title("🚇 Metro Transport Network Graph", fontsize=14)
+plt.axis('off')
+plt.show()
 
-    def delete(self, key):
-        key_hash = self.hash_function(key)
-        if self.table[key_hash]:
-            for i, pair in enumerate(self.table[key_hash]):
-                if pair[0] == key:
-                    del self.table[key_hash][i]
-                    return True
-        return False
+# Аналіз характеристик графа
+print("📊 Аналіз графа:")
+print(f"- Кількість вузлів (станцій): {G.number_of_nodes()}")
+print(f"- Кількість ребер (ліній метро): {G.number_of_edges()}")
+print(f"- Ступені вузлів (кількість з'єднань):")
+for node, degree in G.degree():
+    print(f"  • {node}: {degree}")
