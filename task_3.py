@@ -1,39 +1,50 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# Створюємо граф з вагами
+# Створення графа з вагами
 G = nx.Graph()
 
-# Додаємо вузли та ребра з вагами (наприклад, транспортна мережа міста)
-edges = [
-    ('A', 'B', 4),
-    ('A', 'C', 2),
-    ('B', 'C', 1),
-    ('B', 'D', 5),
-    ('C', 'D', 8),
-    ('C', 'E', 10),
-    ('D', 'E', 2),
-    ('D', 'Z', 6),
-    ('E', 'Z', 3)
+# Вузли (станції)
+stations = [
+    "Central", "North", "South", "East", "West",
+    "Park", "Museum", "Library", "Stadium", "Airport"
+]
+G.add_nodes_from(stations)
+
+# Ребра з вагами (наприклад: відстань у хвилинах)
+weighted_connections = [
+    ("Central", "North", 5),
+    ("Central", "South", 4),
+    ("Central", "East", 6),
+    ("Central", "West", 7),
+    ("Central", "Museum", 3),
+    ("Museum", "Park", 4),
+    ("North", "Library", 6),
+    ("South", "Stadium", 8),
+    ("East", "Airport", 5),
+    ("Library", "Airport", 7)
 ]
 
-for u, v, w in edges:
-    G.add_edge(u, v, weight=w)
+G.add_weighted_edges_from(weighted_connections)
 
-# Візуалізація графа
-pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=14)
-labels = nx.get_edge_attributes(G, 'weight')
-nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-plt.title("Граф із вагами для алгоритму Дейкстри")
+# Візуалізація графа з вагами
+pos = nx.spring_layout(G, seed=42)
+edge_labels = nx.get_edge_attributes(G, 'weight')
+
+plt.figure(figsize=(10, 7))
+nx.draw(G, pos, with_labels=True, node_color='lightgreen', node_size=800)
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+plt.title("Metro Graph with Weights (Minutes Between Stations)")
+plt.axis('off')
 plt.show()
 
-# Алгоритм Дейкстри для знаходження найкоротшого шляху
-start_node = 'A'
-lengths, paths = nx.single_source_dijkstra(G, source=start_node)
+# Використання алгоритму Дейкстри
+source = "Park"
+target = "Stadium"
+shortest_path = nx.dijkstra_path(G, source, target)
+shortest_distance = nx.dijkstra_path_length(G, source, target)
 
-print(f"Найкоротші шляхи від вузла '{start_node}':")
-for target in G.nodes():
-    if target == start_node:
-        continue
-    print(f"  До {target}: шлях {paths[target]}, довжина = {lengths[target]}")
+print(f"🚇 Найкоротший шлях від {source} до {target}:")
+print(" → ".join(shortest_path))
+print(f"Загальна вага (час): {shortest_distance} хв.")
+
